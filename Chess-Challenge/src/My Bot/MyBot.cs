@@ -1,15 +1,16 @@
 ﻿using ChessChallenge.API;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
 public class MyBot : IChessBot
 {
-    public static int peiceCapture = 0;
-    public Move initMove(Board b)
+    public Move Think(Board b, Timer t)
     {
         bool isWhite = b.IsWhiteToMove;
         Move m = new Move();
         Move[] moves = b.GetLegalMoves();
-
         Move bestCapture = new Move();
         foreach (Move move in moves)
         {
@@ -28,18 +29,18 @@ public class MyBot : IChessBot
                         {
                             foreach (Piece p in pList)
                             {
-                                ulong checkBits = 10000000000000;
+                                ulong checkBits = 0;
                                 if (pieceType == PieceType.Bishop)
                                     checkBits = BitboardHelper.GetSliderAttacks(pieceType, p.Square, b);
                                 if (pieceType == PieceType.Knight)
                                     checkBits = BitboardHelper.GetKnightAttacks(p.Square);
                                 if (pieceType == PieceType.Pawn)
                                     checkBits = BitboardHelper.GetPawnAttacks(p.Square, !isWhite);
-                                //ulong goof = b.GetPieceBitboard(move.MovePieceType, isWhite);
-                                //int tarGet = move.TargetSquare.Index;
+                                ulong goof = b.GetPieceBitboard(move.MovePieceType, isWhite);
+                                int tarGet = move.TargetSquare.Index;
 
                                 //ulong wack = goof & checkBits;
-                                if (BitboardHelper.SquareIsSet(checkBits, move.TargetSquare) && move.CapturePieceType < move.MovePieceType)
+                                if (BitboardHelper.SquareIsSet(checkBits, move.TargetSquare) && move.CapturePieceType <= move.MovePieceType)
                                 {
                                     Console.WriteLine("Oof, i woul dhave been killed there by: " + p.ToString());
                                     bad = true;
@@ -64,7 +65,6 @@ public class MyBot : IChessBot
         }
         m = bestCapture;
 
-        // no moves (?)
         if (m.IsNull)
         {
             Random rnd = new Random();
@@ -84,25 +84,24 @@ public class MyBot : IChessBot
                     break;
                 }
             }
+            if(b.FiftyMoveCounter > 40)
+            {
+                Console.WriteLine("oof, fifty.");
+                // Check to see if we have a pawn 
+                if(b.GetPieceList(PieceType.Pawn, isWhite).Count > 0)
+                {
+                    foreach(Move mo in moves)
+                    {
+                        if(mo.MovePieceType == PieceType.Pawn)
+                        {
+                            Console.WriteLine("SAVED!");
+                            m = mo;
+                        }
+                    }
+                }
+            }
         }
-        else
-        {
-            peiceCapture += 1;
-        }
-        return m;
-    }
 
-    public Move Think(Board b, Timer t)
-    {
-        Move m = new Move();
-
-        // Steps:
-        // Choose an initial move, and see how many we take from there
-        Move[] moves = b.GetLegalMoves();
-        foreach(Move move in moves)
-        {
-            b.MakeMove(move);
-        }
         return m;
     }
 }

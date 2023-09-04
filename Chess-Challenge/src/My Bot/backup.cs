@@ -1,7 +1,7 @@
 ﻿using ChessChallenge.API;
 using System;
 
-public class MyBot : IChessBot
+public class backup : IChessBot
 {
     public static int peiceCapture = 0;
 
