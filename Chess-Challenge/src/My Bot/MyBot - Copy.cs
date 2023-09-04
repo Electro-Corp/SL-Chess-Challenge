@@ -4,7 +4,9 @@ using System;
 public class MyBot : IChessBot
 {
     public static int peiceCapture = 0;
-    public Move initMove(Board b)
+
+
+    public Move Think(Board b, Timer t)
     {
         bool isWhite = b.IsWhiteToMove;
         Move m = new Move();
@@ -35,9 +37,9 @@ public class MyBot : IChessBot
                                     checkBits = BitboardHelper.GetKnightAttacks(p.Square);
                                 if (pieceType == PieceType.Pawn)
                                     checkBits = BitboardHelper.GetPawnAttacks(p.Square, !isWhite);
-                                //ulong goof = b.GetPieceBitboard(move.MovePieceType, isWhite);
-                                //int tarGet = move.TargetSquare.Index;
-
+                                ulong goof = b.GetPieceBitboard(move.MovePieceType, isWhite);
+                                int tarGet = move.TargetSquare.Index;
+                                
                                 //ulong wack = goof & checkBits;
                                 if (BitboardHelper.SquareIsSet(checkBits, move.TargetSquare) && move.CapturePieceType < move.MovePieceType)
                                 {
@@ -84,24 +86,6 @@ public class MyBot : IChessBot
                     break;
                 }
             }
-        }
-        else
-        {
-            peiceCapture += 1;
-        }
-        return m;
-    }
-
-    public Move Think(Board b, Timer t)
-    {
-        Move m = new Move();
-
-        // Steps:
-        // Choose an initial move, and see how many we take from there
-        Move[] moves = b.GetLegalMoves();
-        foreach(Move move in moves)
-        {
-            b.MakeMove(move);
         }
         return m;
     }
