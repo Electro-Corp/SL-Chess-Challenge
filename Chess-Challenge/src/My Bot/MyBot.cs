@@ -39,7 +39,7 @@ public class MyBot : IChessBot
                                     checkBits = BitboardHelper.GetPawnAttacks(p.Square, !isWhite);
                                 ulong goof = b.GetPieceBitboard(move.MovePieceType, isWhite);
                                 ulong wack = goof & checkBits;
-                                if (wack > 0)
+                                if (wack > 0 && move.CapturePieceType < move.MovePieceType)
                                 {
                                     Console.WriteLine("Oof, i woul dhave been killed there by: " + p.ToString());
                                     bad = true;
