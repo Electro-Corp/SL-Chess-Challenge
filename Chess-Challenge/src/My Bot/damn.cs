@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-public class MyBot : IChessBot
+public class damn : IChessBot
 {
     public int turn = 0;
     public int tillFinish = 10000;
