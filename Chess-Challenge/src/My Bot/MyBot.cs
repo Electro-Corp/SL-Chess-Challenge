@@ -14,13 +14,15 @@ public class MyBot : IChessBot
     {
         "g2g3 f1g2 d2d3 b1d2 c2c4", //ok
         "b1c3 g1f3 e2e4 h2h3",
-        "b2b4 c1b2 b2e5 a2a3 d2d3 e5b2"
+        "b2b4 c1b2 b2e5 a2a3 d2d3 e5b2",
+        "g1h3 g2g3 f2f3 h3f2"
     };
     public string[] Black_openings =
     {
         "g7g6 f8g7 c7c5 d8c7 c7c5",
         "c7c5 e7e6 b8c6 g8f6 d7d5",
-        "d7d5 e7e6 c7c5 d5d4 b8c6 e6e5"
+        "d7d5 e7e6 c7c5 d5d4 e6e5",
+        "d7d5 d5d4 e7e5 c7c5"
     };
     Random rnd = new Random();
     public Move Think(Board b, Timer t)
@@ -101,23 +103,23 @@ public class MyBot : IChessBot
 
         if (m.IsNull)
         {
-
-            m = moves[rnd.Next(0, moves.Length - 1)];
-            b.MakeMove(m);
-            int checkTimes = 0;
-            while (b.IsInStalemate() || b.IsFiftyMoveDraw() || b.IsInsufficientMaterial() || b.IsRepeatedPosition())
+            foreach(Move j in moves)
             {
-                b.UndoMove(m);
-                m = moves[rnd.Next(0, moves.Length - 1)];
-                b.MakeMove(m);
-                Console.WriteLine("oops checkin");
-                checkTimes++;
-                if (checkTimes > moves.Length)
+                b.MakeMove(j);
+                if(!b.IsInStalemate() && !b.IsInsufficientMaterial() && !b.IsFiftyMoveDraw() && !b.IsRepeatedPosition() && !b.IsDraw())
                 {
-                    Console.WriteLine("Ran out of moves. All of them were bad.\nThere goes the game...");
-                    break;
+                    m = j;
                 }
+                b.UndoMove(j);
             }
+            if (m.IsNull)
+            {
+                Console.WriteLine("Could not find a good move.");
+                m = moves[rnd.Next(0, moves.Length - 1)];
+            }
+            
+            int checkTimes = 0;
+            
             // check for promotion
             if (b.GetPieceList(PieceType.Pawn, !isWhite).Count < 2)
             {
@@ -129,7 +131,29 @@ public class MyBot : IChessBot
                     }
                 }
             }
-            if(b.FiftyMoveCounter > 40)
+            // Use queens
+            if (b.GetPieceList(PieceType.Queen, isWhite).Count > 1)
+            {
+                foreach (Move mo in moves)
+                {
+                    if (mo.MovePieceType == PieceType.Queen && mo.TargetSquare.Index == b.GetPieceList(PieceType.King, !isWhite)[0].Square.Index)
+                    {
+                        return mo;
+                    }
+                }
+            }
+            // Use rooks
+            if (b.GetPieceList(PieceType.Rook, isWhite).Count > 0)
+            {
+                foreach (Move mo in moves)
+                {
+                    if (mo.MovePieceType == PieceType.Rook && mo.TargetSquare.Index == b.GetPieceList(PieceType.King, !isWhite)[0].Square.Index)
+                    {
+                        return mo;
+                    }
+                }
+            }
+            if (b.FiftyMoveCounter > 40)
             {
                 Console.WriteLine("oof, fifty.");
                 // Check to see if we have a pawn 
